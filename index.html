@@ -1,0 +1,565 @@
+﻿﻿
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コードトーン学習アプリ (Web版)</title>
+    <style>
+        /* CSSは変更ありません */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            margin: 0;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .frame {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .frame-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        #chord-builder-display, #chord-progression-display {
+            min-height: 40px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #chord-progression-display {
+            word-spacing: 10px;
+        }
+
+        .button-group {
+            margin-bottom: 10px;
+        }
+
+        .button-group-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .builder-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+            .builder-btn:hover {
+                background-color: #f0f0f0;
+            }
+
+            .builder-btn.selected {
+                background-color: #007bff;
+                color: white;
+                border-color: #007bff;
+            }
+
+        #builder-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #info-display {
+            display: flex;
+            align-items: center;
+            background-color: #fff8e1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+        }
+
+        #beat-indicator {
+            display: flex;
+            gap: 5px;
+            padding-right: 20px;
+        }
+
+        .beat-light {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #555;
+            transition: background-color 0.1s;
+        }
+
+        #current-chord-label {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        #fretboard-grid {
+            display: grid;
+            gap: 1px;
+            background-color: #666;
+            border: 1px solid #666;
+            margin: 20px 0;
+        }
+
+        .fretboard-cell {
+            background-color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            min-height: 50px;
+        }
+
+        .fret-content-cell {
+            background-color: #fff;
+            font-weight: bold;
+            transition: background-color 0.1s;
+        }
+
+        .fret-border-odd {
+            background-color: steelblue !important;
+        }
+
+        .tone-R {
+            background-color: #e74c3c !important;
+            color: white;
+        }
+
+        .tone-M3 {
+            background-color: #f39c12 !important;
+            color: white;
+        }
+
+        .tone-m3 {
+            background-color: #f1c40f !important;
+            color: #333;
+        }
+
+        .tone-P5 {
+            background-color: #2ecc71 !important;
+            color: white;
+        }
+
+        .tone-b5 {
+            background-color: #e84393 !important;
+            color: white;
+        }
+
+        .tone-M7 {
+            background-color: #3498db !important;
+            color: white;
+        }
+
+        .tone-m7 {
+            background-color: #9b59b6 !important;
+            color: white;
+        }
+
+        .tone-bb7 {
+            background-color: #c0392b !important;
+            color: white;
+        }
+
+        .hint-R {
+            background-color: #f5b7b1 !important;
+            color: #333;
+        }
+
+        .hint-M3 {
+            background-color: #fdebd0 !important;
+            color: #333;
+        }
+
+        .hint-m3 {
+            background-color: #fef9e7 !important;
+            color: #333;
+        }
+
+        .hint-P5 {
+            background-color: #d5f5e3 !important;
+            color: #333;
+        }
+
+        .hint-b5 {
+            background-color: #fadbd8 !important;
+            color: #333;
+        }
+
+        .hint-M7 {
+            background-color: #d6eaf8 !important;
+            color: #333;
+        }
+
+        .hint-m7 {
+            background-color: #ebdef0 !important;
+            color: #333;
+        }
+
+        .hint-bb7 {
+            background-color: #eaeded !important;
+            color: #333;
+        }
+
+        .overlap {
+            background-color: #e8daef !important;
+            color: black;
+            font-size: 0.7em !important;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .control-row label {
+                margin: 0 5px 0 10px;
+            }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #f8f8f8;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+            button:hover {
+                background-color: #eee;
+            }
+
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="input-frame" class="frame">
+            <div class="frame-title">コード進行を作成</div>
+            <div class="frame-title" style="font-size: 0.9em; margin-bottom: 5px;">作成した進行</div>
+            <div id="chord-progression-display">進行を組み立ててください</div>
+            <div class="frame-title" style="font-size: 0.9em; margin-bottom: 5px; margin-top: 20px;">組み立て中のコード</div>
+            <div id="chord-builder-display">ルート音を選んでください</div>
+            <div class="button-group">
+                <div class="button-group-title">1. ルート音</div>
+                <div id="root-note-buttons" class="button-container"></div>
+            </div>
+            <div class="button-group">
+                <div class="button-group-title">2. コードタイプ</div>
+                <div id="chord-type-buttons" class="button-container"></div>
+            </div>
+            <div id="builder-actions">
+                <button id="add-chord-btn">コードを追加</button>
+                <button id="clear-last-chord-btn">1つ戻す</button>
+                <button id="clear-progression-btn">全消去</button>
+            </div>
+            <hr style="margin: 20px 0;">
+            <button id="start-app-btn">この進行で練習開始</button>
+        </div>
+
+        <div id="display-frame" class="frame hidden">
+            <div id="info-display">
+                <div id="beat-indicator"></div>
+                <div id="current-chord-label"></div>
+            </div>
+            <div id="fretboard-grid"></div>
+            <div id="controls">
+                <div class="control-row">
+                    <button id="toggle-play-btn">▶ 開始</button>
+                    <label for="bpm-input">BPM:</label>
+                    <input type="number" id="bpm-input" value="90" style="width: 50px;">
+                    <label for="beats-input">拍数:</label>
+                    <input type="number" id="beats-input" value="4" style="width: 40px;">
+                    <label class="checkbox-label"><input type="checkbox" id="metronome-on-check" checked> サウンドON</label>
+                    <label class="checkbox-label"><input type="checkbox" id="play-chord-tones-check"> コードトーン再生</label>
+                    <label class="checkbox-label"><input type="checkbox" id="fret-22-check"> 22Fまで表示</label>
+                    <label class="checkbox-label"><input type="checkbox" id="show-hint-check" checked> 次のコードをヒント表示</label>
+                </div>
+                <div class="control-row">
+                    <button id="prev-chord-btn">← 前へ</button>
+                    <button id="next-chord-btn">次へ →</button>
+                    <button id="stop-app-btn">設定に戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =================================================================================
+        // --- 1. 定数とデータ定義 ---
+        // =================================================================================
+        const NOTES_DATA = [
+            { half: 0, sharp: 'C', flat: '' }, { half: 1, sharp: 'C#', flat: 'Db' },
+            { half: 2, sharp: 'D', flat: '' }, { half: 3, sharp: 'D#', flat: 'Eb' },
+            { half: 4, sharp: 'E', flat: '' }, { half: 5, sharp: 'F', flat: '' },
+            { half: 6, sharp: 'F#', flat: 'Gb' }, { half: 7, sharp: 'G', flat: '' },
+            { half: 8, sharp: 'G#', flat: 'Ab' }, { half: 9, sharp: 'A', flat: '' },
+            { half: 10, sharp: 'A#', flat: 'Bb' }, { half: 11, sharp: 'B', flat: '' }
+        ];
+        const CHORD_DEFINITIONS = {
+            'M': { intervals: [0, 4, 7], degrees: ['R', 'M3', 'P5'] },
+            'm': { intervals: [0, 3, 7], degrees: ['R', 'm3', 'P5'] },
+            'M7': { intervals: [0, 4, 7, 11], degrees: ['R', 'M3', 'P5', 'M7'] },
+            'm7': { intervals: [0, 3, 7, 10], degrees: ['R', 'm3', 'P5', 'm7'] },
+            '7': { intervals: [0, 4, 7, 10], degrees: ['R', 'M3', 'P5', 'm7'] },
+            'dim': { intervals: [0, 3, 6], degrees: ['R', 'm3', 'b5'] },
+            'm7b5': { intervals: [0, 3, 6, 10], degrees: ['R', 'm3', 'b5', 'm7'] },
+            'dim7': { intervals: [0, 3, 6, 9], degrees: ['R', 'm3', 'b5', 'bb7'] }
+        };
+        const FRETBOARD_STRINGS_BASE_NOTES = { '1弦': 4, '2弦': 11, '3弦': 7, '4弦': 2, '5弦': 9, '6弦': 4 };
+        const HINT_COLORS = { 'R': "hint-R", 'M3': "hint-M3", 'm3': "hint-m3", 'P5': "hint-P5", 'b5': "hint-b5", 'M7': "hint-M7", 'm7': "hint-m7", 'bb7': "hint-bb7" };
+        const TONE_COLORS = { 'R': "tone-R", 'M3': "tone-M3", 'm3': "tone-m3", 'P5': "tone-P5", 'b5': "tone-b5", 'M7': "tone-M7", 'm7': "tone-m7", 'bb7': "tone-bb7" };
+
+        // =================================================================================
+        // --- 2. 状態管理 ---
+        // =================================================================================
+        const state = {
+            chordProgression: [],
+            currentChordIndex: 0,
+            // beatCountは小節内の拍ではなく、開始からの通算拍数に変更
+            beatCount: 0,
+            isPlaying: false,
+            isInHintView: false,
+            metronomeTimerId: null,
+            // ★★★ タイマー用の状態を追加 ★★★
+            startTime: 0.0,
+            nextBeatTime: 0.0
+        };
+        let audioCtx = null;
+        let builderState = { root: null, type: null };
+
+        // =================================================================================
+        // --- 3. DOM要素の取得 ---
+        // =================================================================================
+        const dom = {};
+        document.addEventListener('DOMContentLoaded', () => {
+            const ids = ["input-frame", "display-frame", "start-app-btn", "stop-app-btn", "beat-indicator", "current-chord-label", "fretboard-grid", "toggle-play-btn", "bpm-input", "beats-input", "metronome-on-check", "fret-22-check", "show-hint-check", "prev-chord-btn", "next-chord-btn", "chord-builder-display", "chord-progression-display", "root-note-buttons", "chord-type-buttons", "add-chord-btn", "clear-last-chord-btn", "clear-progression-btn", "play-chord-tones-check"];
+            ids.forEach(id => {
+                if (document.getElementById(id)) { dom[id.replace(/-(\w)/g, (m, p1) => p1.toUpperCase())] = document.getElementById(id); }
+            });
+            init();
+        });
+
+        // =================================================================================
+        // --- 4. ヘルパー関数 ---
+        // =================================================================================
+        const getNoteName = (halfToneIndex, preferSharp = true) => { halfToneIndex = (halfToneIndex % 12 + 12) % 12; const noteData = NOTES_DATA.find(n => n.half === halfToneIndex); if (!noteData) return ""; return preferSharp || !noteData.flat ? noteData.sharp : noteData.flat; };
+        const getHalfToneIndex = (noteName) => { const note = NOTES_DATA.find(n => n.sharp.toLowerCase() === noteName.toLowerCase() || (n.flat && n.flat.toLowerCase() === noteName.toLowerCase())); return note ? note.half : -1; };
+        const parseChordString = (fullChordString) => { const sortedTypes = Object.keys(CHORD_DEFINITIONS).sort((a, b) => b.length - a.length); for (const c_type of sortedTypes) { if (fullChordString.endsWith(c_type)) { const root = fullChordString.slice(0, -c_type.length); return { root: root.trim(), type: c_type }; } } return { root: fullChordString.trim(), type: 'M' }; };
+        function getFrequencyForNote(halfToneIndex, octave) { const A4_FREQUENCY = 440; const n = (halfToneIndex - 9) + (octave - 4) * 12; return A4_FREQUENCY * Math.pow(2, n / 12); }
+
+        // =================================================================================
+        // --- 5. UI更新関数 ---
+        // =================================================================================
+        function createBuilderButtons() {
+            NOTES_DATA.forEach(note => {
+                const btn = document.createElement('button');
+                btn.className = 'builder-btn';
+                btn.textContent = (note.flat && note.flat !== '') ? `${note.sharp}/${note.flat}` : note.sharp;
+                btn.dataset.note = note.sharp;
+                btn.addEventListener('click', () => handleRootSelect(btn));
+                dom.rootNoteButtons.appendChild(btn);
+            });
+            Object.keys(CHORD_DEFINITIONS).forEach(type => {
+                const btn = document.createElement('button');
+                btn.className = 'builder-btn';
+                btn.textContent = type;
+                btn.dataset.type = type;
+                btn.addEventListener('click', () => handleTypeSelect(btn));
+                dom.chordTypeButtons.appendChild(btn);
+            });
+        }
+        function updateBuilderDisplay() {
+            let text = "ルート音を選んでください";
+            if (builderState.root) {
+                text = builderState.root;
+                if (builderState.type && builderState.type !== 'M') { text += builderState.type; }
+                else if (builderState.type === null) { text += "..."; }
+            }
+            dom.chordBuilderDisplay.textContent = text;
+        }
+        function updateProgressionDisplay() {
+            if (state.chordProgression.length > 0) { dom.chordProgressionDisplay.textContent = state.chordProgression.join('  →  '); }
+            else { dom.chordProgressionDisplay.textContent = '進行を組み立ててください'; }
+        }
+        function createBeatIndicators() { dom.beatIndicator.innerHTML = ''; const totalBeats = parseInt(dom.beatsInput.value) || 4; for (let i = 0; i < totalBeats; i++) { const light = document.createElement('div'); light.className = 'beat-light'; dom.beatIndicator.appendChild(light); } }
+        // beatInMeasureを引数に取るように変更
+        function updateBeatDisplay(beatInMeasure) { const lights = dom.beatIndicator.children; for (let i = 0; i < lights.length; i++) { lights[i].style.backgroundColor = '#555'; } if (state.isPlaying && beatInMeasure >= 0 && beatInMeasure < lights.length) { lights[beatInMeasure].style.backgroundColor = beatInMeasure === 0 ? '#e74c3c' : '#f1c40f'; } }
+        function populateFretboardGrid() { dom.fretboardGrid.innerHTML = ''; const maxFret = dom.fret22Check.checked ? 22 : 12; const stringNames = ['1弦', '2弦', '3弦', '4弦', '5弦', '6弦']; const stringColWidth = "40px"; const fret0ColWidth = "25px"; dom.fretboardGrid.style.gridTemplateColumns = `${stringColWidth} ${fret0ColWidth} repeat(${maxFret}, 1fr)`; dom.fretboardGrid.insertAdjacentHTML('beforeend', '<div class="fretboard-cell"></div><div class="fretboard-cell">0</div>'); for (let f = 1; f <= maxFret; f++) { const isOdd = (f % 2 !== 0 && f !== 1 && f !== 13); dom.fretboardGrid.insertAdjacentHTML('beforeend', `<div class="fretboard-cell ${isOdd ? 'fret-border-odd' : ''}">${f}</div>`); } stringNames.forEach(stringName => { dom.fretboardGrid.insertAdjacentHTML('beforeend', `<div class="fretboard-cell">${stringName}</div>`); for (let fret = 0; fret <= maxFret; fret++) { const isOdd = (fret % 2 !== 0 && fret !== 1 && fret !== 13); const cell = document.createElement('div'); cell.className = `fretboard-cell fret-content-cell ${isOdd ? 'fret-border-odd' : ''}`; cell.id = `cell-${stringName}-${fret}`; dom.fretboardGrid.appendChild(cell); } }); }
+        function updateFretboardDisplay(showHint = false, hintDirection = 1) { const cells = document.querySelectorAll('.fret-content-cell'); cells.forEach(cell => { cell.textContent = ''; cell.className = cell.className.replace(/tone-\S+|hint-\S+|overlap/g, '').trim(); }); const currentChord = parseChordString(state.chordProgression[state.currentChordIndex]); const currentDef = CHORD_DEFINITIONS[currentChord.type]; if (!currentDef) return; const currentRootHT = getHalfToneIndex(currentChord.root); let nextDef = null, nextRootHT = null; if (showHint && state.chordProgression.length > 1) { const nextIndex = (state.currentChordIndex + hintDirection + state.chordProgression.length) % state.chordProgression.length; const nextChord = parseChordString(state.chordProgression[nextIndex]); nextDef = CHORD_DEFINITIONS[nextChord.type]; if (nextDef) nextRootHT = getHalfToneIndex(nextChord.root); } const maxFret = dom.fret22Check.checked ? 22 : 12; const stringNames = ['1弦', '2弦', '3弦', '4弦', '5弦', '6弦']; stringNames.forEach(stringName => { const baseNote = FRETBOARD_STRINGS_BASE_NOTES[stringName]; for (let fret = 0; fret <= maxFret; fret++) { const cell = document.getElementById(`cell-${stringName}-${fret}`); if (!cell) continue; const noteHT = (baseNote + fret); let currentDegree = null, nextDegree = null; const currentInterval = (noteHT - currentRootHT + 12) % 12; if (currentDef.intervals.includes(currentInterval)) { currentDegree = currentDef.degrees[currentDef.intervals.indexOf(currentInterval)]; } if (nextDef) { const nextInterval = (noteHT - nextRootHT + 12) % 12; if (nextDef.intervals.includes(nextInterval)) { nextDegree = nextDef.degrees[nextDef.intervals.indexOf(nextInterval)]; } } if (currentDegree && nextDegree) { cell.textContent = `${currentDegree}/${nextDegree}`; cell.classList.add('overlap'); } else if (currentDegree) { cell.textContent = currentDegree; cell.classList.add(TONE_COLORS[currentDegree]); } else if (nextDegree) { cell.textContent = nextDegree; cell.classList.add(HINT_COLORS[nextDegree]); } } }); }
+        function displayCurrentChord() { if (!state.chordProgression || state.chordProgression.length === 0) return; const fullChordString = state.chordProgression[state.currentChordIndex]; const parsed = parseChordString(fullChordString); const def = CHORD_DEFINITIONS[parsed.type]; if (!def) return; const rootHT = getHalfToneIndex(parsed.root); const preferSharps = getNoteName(rootHT).includes('#'); let toneDisplay = def.degrees.map((deg, i) => `(${deg})${getNoteName(rootHT + def.intervals[i], preferSharps)}`).join(' '); dom.currentChordLabel.textContent = `${fullChordString} || ${toneDisplay}`; const totalBeats = parseInt(dom.beatsInput.value) || 4; const beatInMeasure = state.beatCount % totalBeats; let isHintBeat = false; if (dom.showHintCheck.checked && state.isPlaying) { if (beatInMeasure === totalBeats - 1) isHintBeat = true; } updateFretboardDisplay(isHintBeat); }
+
+        // =================================================================================
+        // --- 6. アプリケーションロジック ---
+        // =================================================================================
+
+        function playSound(beatInMeasure) {
+            if (!dom.metronomeOnCheck.checked) return;
+            if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("AudioContext could not be created.", e); return; } }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            function playFrequency(frequency) { const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination); oscillator.start(audioCtx.currentTime); oscillator.stop(audioCtx.currentTime + 0.5); }
+            if (dom.playChordTonesCheck.checked) {
+                const currentChordString = state.chordProgression[state.currentChordIndex];
+                const { root, type } = parseChordString(currentChordString);
+                const rootHT = getHalfToneIndex(root);
+                const definition = CHORD_DEFINITIONS[type];
+                if (rootHT === -1 || !definition) { playFrequency(880); return; }
+                definition.intervals.forEach(interval => {
+                    const targetNoteHT = rootHT + interval;
+                    const baseOctave = 4;
+                    const octave = baseOctave + Math.floor(targetNoteHT / 12);
+                    const halfToneInOctave = targetNoteHT % 12;
+                    const frequency = getFrequencyForNote(halfToneInOctave, octave);
+                    playFrequency(frequency);
+                });
+            } else {
+                const frequency = beatInMeasure === 0 ? 880 : 660;
+                playFrequency(frequency);
+            }
+        }
+        function handleRootSelect(button) { document.querySelectorAll('#root-note-buttons .builder-btn').forEach(btn => btn.classList.remove('selected')); button.classList.add('selected'); builderState.root = button.dataset.note; if (!builderState.type) { const majorButton = document.querySelector('#chord-type-buttons .builder-btn[data-type="M"]'); if (majorButton) handleTypeSelect(majorButton); } updateBuilderDisplay(); }
+        function handleTypeSelect(button) { document.querySelectorAll('#chord-type-buttons .builder-btn').forEach(btn => btn.classList.remove('selected')); button.classList.add('selected'); builderState.type = button.dataset.type; updateBuilderDisplay(); }
+        function addChord() { if (builderState.root && builderState.type) { const typeString = builderState.type === 'M' ? '' : builderState.type; const newChord = builderState.root + typeString; state.chordProgression.push(newChord); updateProgressionDisplay(); builderState.root = null; builderState.type = null; document.querySelectorAll('.builder-btn.selected').forEach(btn => btn.classList.remove('selected')); updateBuilderDisplay(); } else { alert('ルート音とコードタイプを選択してください。'); } }
+        function clearLastChord() { if (state.chordProgression.length > 0) { state.chordProgression.pop(); updateProgressionDisplay(); } }
+        function clearProgression() { state.chordProgression = []; updateProgressionDisplay(); }
+        function startApp() { if (state.chordProgression.length === 0) { alert("コード進行を少なくとも1つ作成してください。"); return; } dom.inputFrame.classList.add('hidden'); dom.displayFrame.classList.remove('hidden'); state.currentChordIndex = 0; state.beatCount = 0; state.isPlaying = false; state.isInHintView = false; createBeatIndicators(); populateFretboardGrid(); displayCurrentChord(); updateBeatDisplay(0); }
+        function stopApp() { togglePlay(false); if (audioCtx && audioCtx.state !== 'closed') { audioCtx.close().then(() => audioCtx = null); } dom.displayFrame.classList.add('hidden'); dom.inputFrame.classList.remove('hidden'); }
+
+        // ★★★ ここからタイマーロジックを全面的に更新 ★★★
+
+        // 各拍で実行されるアクションをまとめた関数
+        function handleBeatAction(beat) {
+            const totalBeats = parseInt(dom.beatsInput.value) || 4;
+            const beatInMeasure = beat % totalBeats;
+            const chordIndex = Math.floor(beat / totalBeats) % state.chordProgression.length;
+
+            // 現在のコードと拍を更新
+            state.currentChordIndex = chordIndex;
+
+            // UIとサウンドを更新
+            displayCurrentChord();
+            updateBeatDisplay(beatInMeasure);
+            playSound(beatInMeasure);
+        }
+
+        // 高精度タイマーのスケジューラ本体
+        function metronomeScheduler() {
+            if (!state.isPlaying) return;
+
+            const beatDuration = 60.0 / (parseInt(dom.bpmInput.value) || 90);
+            const currentTime = audioCtx.currentTime;
+
+            // 次の拍の時刻を過ぎていたら、拍のアクションを実行
+            while (state.nextBeatTime < currentTime + 0.1) { // 100ms先まで予測して処理
+                handleBeatAction(state.beatCount);
+                state.nextBeatTime += beatDuration;
+                state.beatCount++;
+            }
+
+            state.metronomeTimerId = setTimeout(metronomeScheduler, 25); // 25msごとにチェック
+        }
+
+        function togglePlay(forceState) {
+            state.isPlaying = typeof forceState === 'boolean' ? forceState : !state.isPlaying;
+
+            if (state.isPlaying) {
+                if (!audioCtx) {
+                    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                    catch (e) { console.error("AudioContext could not be created.", e); state.isPlaying = false; return; }
+                }
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                dom.togglePlayBtn.textContent = "■ 停止";
+                [dom.prevChordBtn, dom.nextChordBtn].forEach(btn => btn.disabled = true);
+
+                // タイマーの初期化
+                state.beatCount = 0;
+                state.startTime = audioCtx.currentTime;
+                state.nextBeatTime = state.startTime;
+                metronomeScheduler(); // 新しいスケジューラを起動
+
+            } else {
+                dom.togglePlayBtn.textContent = "▶ 開始";
+                [dom.prevChordBtn, dom.nextChordBtn].forEach(btn => btn.disabled = false);
+                clearTimeout(state.metronomeTimerId);
+                state.metronomeTimerId = null;
+                updateBeatDisplay(-1); // ビート表示をリセット
+            }
+        }
+
+        // ★★★ ここまでタイマーロジックを全面的に更新 ★★★
+
+        function navigateChord(direction) { if (state.isPlaying) return; if (!dom.showHintCheck.checked || state.isInHintView) { state.currentChordIndex = (state.currentChordIndex + direction + state.chordProgression.length) % state.chordProgression.length; state.beatCount = 0; state.isInHintView = false; displayCurrentChord(); updateBeatDisplay(-1); } else { updateFretboardDisplay(true, direction); state.isInHintView = true; } }
+        function handleKeyDown(event) { if (dom.displayFrame.classList.contains('hidden')) return; if (document.activeElement.tagName === 'INPUT') return; switch (event.key) { case "ArrowRight": navigateChord(1); break; case "ArrowLeft": navigateChord(-1); break; case " ": event.preventDefault(); togglePlay(); break; } }
+
+        // =================================================================================
+        // --- 7. 初期化とイベントリスナー ---
+        // =================================================================================
+        function init() {
+            dom.startAppBtn.addEventListener('click', startApp);
+            dom.stopAppBtn.addEventListener('click', stopApp);
+            dom.togglePlayBtn.addEventListener('click', () => togglePlay());
+            dom.beatsInput.addEventListener('change', () => { createBeatIndicators(); updateBeatDisplay(-1); });
+            dom.fret22Check.addEventListener('change', () => { state.isInHintView = false; populateFretboardGrid(); displayCurrentChord(); });
+            dom.showHintCheck.addEventListener('change', () => { state.isInHintView = false; displayCurrentChord(); });
+            dom.prevChordBtn.addEventListener('click', () => navigateChord(-1));
+            dom.nextChordBtn.addEventListener('click', () => navigateChord(1));
+            document.addEventListener('keydown', handleKeyDown);
+            document.getElementById('app-container').addEventListener('click', (event) => { if (document.activeElement.tagName === 'INPUT' && event.target.tagName !== 'INPUT') { document.activeElement.blur(); } });
+            createBuilderButtons();
+            dom.addChordBtn.addEventListener('click', addChord);
+            dom.clearLastChordBtn.addEventListener('click', clearLastChord);
+            dom.clearProgressionBtn.addEventListener('click', clearProgression);
+        }
+    </script>
+
+</body>
+</html>
